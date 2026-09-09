@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { useState } from 'react';
-import { Control, FieldValues, Path, useController } from 'react-hook-form';
+import { Control, FieldValues, Path, PathValue, useController } from 'react-hook-form';
 import { Button } from './button';
 import { FormControl } from './form';
 
@@ -38,7 +38,7 @@ export function MultiValueField<T extends FieldValues>({
   } = useController({
     name,
     control,
-    defaultValue: [] as any,
+    defaultValue: [] as unknown as PathValue<T, Path<T>>,
   });
 
   const [inputValue, setInputValue] = useState('');

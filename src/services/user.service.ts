@@ -1,7 +1,7 @@
 import { ISignupFormValues } from '@/components/saas/auth/sign-up/schema/sign-up.schema';
 import Axios from '@/config/api.config';
-import { COMMON_SORT, ENTITY_SORT } from '@/constants/common.constants';
-import { IBasePaginationExtras, ICommonResponseDTO, IPaginatedResponseDTO } from '@/dto/common.dto';
+import { ENTITY_SORT, SORT_BY } from '@/constants/common.constants';
+import { ICommonResponseDTO, IPaginatedResponseDTO } from '@/dto/common.dto';
 import { IUserQuery } from '@/dto/user.dto';
 import { toast } from '@/hooks/use-toast';
 import { DeepPartial } from '@/types/common.type';
@@ -9,21 +9,19 @@ import { IUser } from '@/types/user.type';
 import ErrorHandler from '@/utils/error-handler';
 import { AxiosError } from 'axios';
 
-export const fetchAllUsers = async (params?: IUserQuery) => {
+export const fetchAllUsers = async (params?: IUserQuery): Promise<IPaginatedResponseDTO<IUser>> => {
   try {
-    const response = await Axios.get<
-      ICommonResponseDTO<IPaginatedResponseDTO<IUser, IBasePaginationExtras>>
-    >('/v1/user', {
+    const response = await Axios.get<ICommonResponseDTO<IPaginatedResponseDTO<IUser>>>('/v1/user', {
       params: {
         ...params,
-        sort_by: params?.sort_by ?? COMMON_SORT.DATE,
+        sortBy: params?.sortBy ?? SORT_BY.DATE,
         limit: params?.limit ?? 24,
-        skip: params?.skip ?? 0,
-        sort_order: params?.sort_order ?? ENTITY_SORT.DESC,
+        page: params?.page ?? 1,
+        sortOrder: params?.sortOrder ?? ENTITY_SORT.DESC,
       },
     });
 
-    return response.data.data ?? [];
+    return response.data.data;
   } catch (err) {
     if (err instanceof AxiosError) {
       const { errorMessage } = ErrorHandler(err);

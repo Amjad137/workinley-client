@@ -20,23 +20,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { API_QUERY_PARAMS } from '@/constants/common.constants';
+import { IPaginationMeta } from '@/dto/common.dto';
 import { useShallow } from 'zustand/react/shallow';
 
 export interface PaginationWithLinksProps {
   pageSizeSelectOptions?: {
     pageSizeOptions: number[];
   };
-  totalCount: number;
-  limit: number;
-  skip: number;
+  pagination?: IPaginationMeta;
   isTable?: boolean;
 }
 
 export const PaginationWithLinks = ({
   pageSizeSelectOptions,
-  limit = 10,
-  totalCount = 0,
-  skip = 0,
+  pagination,
   isTable = false,
 }: PaginationWithLinksProps) => {
   const router = useRouter();
@@ -44,25 +41,29 @@ export const PaginationWithLinks = ({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // Always call hooks unconditionally
   const { setFilters } = useTableStore(useShallow((state) => ({ setFilters: state.setFilters })));
 
-  // Calculate current page from skip and limit
-  const currentPage = Math.floor(skip / limit) + 1;
-  const totalPageCount = Math.ceil(totalCount / limit);
+  const {
+    page = 1,
+    limit = 10,
+    totalPages = 1,
+    hasNext = false,
+    hasPrev = false,
+  } = pagination || {};
+
+  const currentPage = page;
+  const totalPageCount = Math.max(totalPages, 1);
+  const canPrev = hasPrev;
+  const canNext = hasNext;
 
   const updatePage = useCallback(
     (newPage: number) => {
       startTransition(() => {
-        // Calculate new skip value based on page number
-        const newSkip = (newPage - 1) * limit;
-
         if (isTable) {
-          setFilters(API_QUERY_PARAMS.SKIP, newSkip);
+          setFilters(API_QUERY_PARAMS.PAGE, newPage);
         } else {
-          // Regular URL update for non-table pagination
           const newSearchParams = new URLSearchParams(searchParams?.toString() || '');
-          newSearchParams.set(API_QUERY_PARAMS.SKIP, String(newSkip));
+          newSearchParams.set(API_QUERY_PARAMS.PAGE, String(newPage));
 
           router.replace(`${pathname}?${newSearchParams.toString()}`, {
             scroll: false,
@@ -70,7 +71,7 @@ export const PaginationWithLinks = ({
         }
       });
     },
-    [searchParams, pathname, limit, router, isTable, setFilters],
+    [searchParams, pathname, router, isTable, setFilters],
   );
 
   const updateLimit = useCallback(
@@ -78,12 +79,11 @@ export const PaginationWithLinks = ({
       startTransition(() => {
         if (isTable) {
           setFilters(API_QUERY_PARAMS.LIMIT, newLimit);
-          setFilters(API_QUERY_PARAMS.SKIP, 0);
+          setFilters(API_QUERY_PARAMS.PAGE, 1);
         } else {
-          // Regular URL update for non-table pagination
           const newSearchParams = new URLSearchParams(searchParams?.toString() || '');
           newSearchParams.set(API_QUERY_PARAMS.LIMIT, String(newLimit));
-          newSearchParams.set(API_QUERY_PARAMS.SKIP, '0');
+          newSearchParams.set(API_QUERY_PARAMS.PAGE, '1');
 
           router.replace(`${pathname}?${newSearchParams.toString()}`, {
             scroll: false,
@@ -191,8 +191,8 @@ export const PaginationWithLinks = ({
           <PaginationItem>
             <PaginationButton
               onClick={() => updatePage(Math.max(currentPage - 1, 1))}
-              disabled={currentPage === 1 || isPending}
-              className={currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}
+              disabled={!canPrev || isPending}
+              className={!canPrev ? 'opacity-50 cursor-not-allowed' : ''}
             >
               <span className='sr-only'>Go to previous page</span>
               <svg
@@ -216,8 +216,8 @@ export const PaginationWithLinks = ({
           <PaginationItem>
             <PaginationButton
               onClick={() => updatePage(Math.min(currentPage + 1, totalPageCount))}
-              disabled={currentPage === totalPageCount || isPending}
-              className={currentPage === totalPageCount ? 'opacity-50 cursor-not-allowed' : ''}
+              disabled={!canNext || isPending}
+              className={!canNext ? 'opacity-50 cursor-not-allowed' : ''}
             >
               <span className='sr-only'>Go to next page</span>
               <svg
@@ -241,19 +241,21 @@ export const PaginationWithLinks = ({
   );
 };
 
+interface PaginationButtonProps {
+  isActive?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+  className?: string;
+}
+
 const PaginationButton = ({
   isActive,
   disabled,
   onClick,
   children,
   className,
-}: {
-  isActive?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  className?: string;
-}) => {
+}: PaginationButtonProps) => {
   return (
     <Button
       variant={isActive ? 'default' : 'outline'}
@@ -267,17 +269,14 @@ const PaginationButton = ({
   );
 };
 
-const SelectRowsPerPage = ({
-  options,
-  setPageSize,
-  limit,
-  disabled,
-}: {
+interface SelectRowsPerPageProps {
   options: number[];
   setPageSize: (newSize: number) => void;
   limit: number;
   disabled?: boolean;
-}) => {
+}
+
+const SelectRowsPerPage = ({ options, setPageSize, limit, disabled }: SelectRowsPerPageProps) => {
   return (
     <div className='flex items-center gap-4'>
       <span className='whitespace-nowrap text-sm'>Rows per page</span>

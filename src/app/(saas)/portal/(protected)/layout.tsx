@@ -2,6 +2,7 @@
 
 import { SiteHeader } from '@/components/saas/shared/header';
 import { AdminSidebar } from '@/components/saas/sidebar/admin/admin-sidebar';
+import { ManagerSidebar } from '@/components/saas/sidebar/manager/manager-sidebar';
 import { UserSidebar } from '@/components/saas/sidebar/user/user-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { USER_ROLE } from '@/constants/user.constants';
@@ -21,15 +22,19 @@ const AppLayout = ({ children }: Props) => {
     })),
   );
 
-  const renderSidebar = (userRole: USER_ROLE) => {
-    if (userRole === USER_ROLE.ADMIN) {
-      return <AdminSidebar />;
+  const renderSidebar = (role: USER_ROLE) => {
+    switch (role) {
+      case USER_ROLE.ADMIN:
+        return <AdminSidebar />;
+      case USER_ROLE.MANAGER:
+        return <ManagerSidebar />;
+      case USER_ROLE.USER:
+        return <UserSidebar />;
+      default:
+        return null;
     }
-    if (userRole === USER_ROLE.USER) {
-      return <UserSidebar />;
-    }
-    return null;
   };
+
   return (
     <ReactQueryProvider>
       <SidebarProvider>

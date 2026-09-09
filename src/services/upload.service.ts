@@ -1,17 +1,9 @@
 import Axios from '@/config/api.config';
 import { ICommonResponseDTO } from '@/dto/common.dto';
+import { IPresignedUrlResponse, IPublicUploadResponse } from '@/dto/upload.dto';
 import axios from 'axios';
 
-export interface IPresignedUrlResponse {
-  key: string;
-  presignedUrl: string;
-}
-
-export interface IPublicUploadResponse extends IPresignedUrlResponse {
-  publicUrl: string;
-}
-
-// Plain axios instance for S3 — bypasses your interceptors entirely
+// Plain axios instance for S3 - bypasses your interceptors entirely
 const S3Axios = axios.create();
 
 export const getSecureUploadUrl = async (
@@ -40,7 +32,7 @@ export const getPublicUploadUrl = async (
   return response.data.data;
 };
 
-// Uses S3Axios — no auth headers, no interceptors, direct S3 call
+// Uses S3Axios - no auth headers, no interceptors, direct S3 call
 const uploadToS3 = async (presignedUrl: string, file: File): Promise<void> => {
   const response = await S3Axios.put(presignedUrl, file, {
     headers: { 'Content-Type': file.type },

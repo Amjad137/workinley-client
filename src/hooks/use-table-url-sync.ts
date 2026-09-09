@@ -1,6 +1,5 @@
-// src/hooks/use-table-url-sync.ts
 import { API_QUERY_PARAMS } from '@/constants/common.constants';
-import { useTableStore } from '@/stores/table-store';
+import { FilterValue, useTableStore } from '@/stores/table-store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -24,7 +23,7 @@ export function useTableUrlSync(mode: 'table' | 'cards' = 'table') {
     if (hasInitialized.current) return;
     console.log('Initializing from URL');
 
-    const urlParams: Record<string, any> = {};
+    const urlParams: Record<string, FilterValue> = {};
 
     // Extract params from URL
     searchParams.forEach((value, key) => {
@@ -71,19 +70,23 @@ export function useTableUrlSync(mode: 'table' | 'cards' = 'table') {
 
     const currentParams = new URLSearchParams(searchParams.toString());
     const paginationParams = {
+      page: currentParams.get(API_QUERY_PARAMS.PAGE),
+      limit: currentParams.get(API_QUERY_PARAMS.LIMIT),
       skip: currentParams.get('skip'),
-      limit: currentParams.get('limit'),
     };
 
     const params = new URLSearchParams();
 
     // Preserve pagination params from URL
+    if (paginationParams.page) params.set(API_QUERY_PARAMS.PAGE, paginationParams.page);
+    if (paginationParams.limit) params.set(API_QUERY_PARAMS.LIMIT, paginationParams.limit);
     if (paginationParams.skip) params.set('skip', paginationParams.skip);
-    if (paginationParams.limit) params.set('limit', paginationParams.limit);
 
     // Add non-pagination filters from store
     Object.entries(filters).forEach(([key, value]) => {
       if (
+        key !== API_QUERY_PARAMS.PAGE &&
+        key !== API_QUERY_PARAMS.LIMIT &&
         key !== 'skip' &&
         key !== 'limit' &&
         value !== undefined &&

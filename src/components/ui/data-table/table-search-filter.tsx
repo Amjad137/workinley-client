@@ -15,7 +15,7 @@ interface TableSearchFilterProps {
 
 export const TableSearchFilter = ({
   placeholder = 'Search...',
-  paramKey = API_QUERY_PARAMS.SEARCH_KEY,
+  paramKey = API_QUERY_PARAMS.SEARCH,
   className = '',
 }: TableSearchFilterProps) => {
   const { filters, setFilters } = useTableStore(
@@ -25,17 +25,19 @@ export const TableSearchFilter = ({
     })),
   );
 
-  const [inputValue, setInputValue] = useState(filters[paramKey] ?? '');
+  const [inputValue, setInputValue] = useState<string>(
+    filters[paramKey] != null ? String(filters[paramKey]) : '',
+  );
   const debouncedValue = useDebounce(inputValue, 500);
-  const skipValue = useMemo(() => filters[API_QUERY_PARAMS.SKIP], [filters]);
+  const pageValue = useMemo(() => filters[API_QUERY_PARAMS.PAGE], [filters]);
 
   // Update filter when debounced value changes
   useEffect(() => {
-    if (skipValue && skipValue !== 0 && debouncedValue) {
-      setFilters(API_QUERY_PARAMS.SKIP, 0);
+    if (pageValue && pageValue !== 1 && debouncedValue) {
+      setFilters(API_QUERY_PARAMS.PAGE, 1);
     }
     setFilters(paramKey, debouncedValue);
-  }, [debouncedValue, paramKey, setFilters, skipValue]);
+  }, [debouncedValue, paramKey, setFilters, pageValue]);
 
   // Sync with external changes to the filter only when filters are reset
   useEffect(() => {
@@ -60,6 +62,9 @@ export const TableSearchFilter = ({
             type='button'
             onClick={() => {
               setInputValue('');
+              if (pageValue && pageValue !== 1) {
+                setFilters(API_QUERY_PARAMS.PAGE, 1);
+              }
               setFilters(paramKey, '');
             }}
             className='text-muted-foreground hover:text-foreground'

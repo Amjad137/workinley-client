@@ -1,5 +1,3 @@
-import { IBaseEntity } from '@/types/common.type';
-
 export enum ENVIRONMENTS {
   PRODUCTION = 'production',
   QA = 'qa',
@@ -19,19 +17,20 @@ export enum ENTITY_SORT {
   DESC = 'desc',
 }
 
-export enum COMMON_SORT {
+export enum SORT_BY {
   DATE = 'createdAt',
 }
 
 export enum API_QUERY_PARAMS {
-  SEARCH_KEY = 'search_key',
+  SEARCH = 'search',
+  PAGE = 'page',
   LIMIT = 'limit',
   SKIP = 'skip',
-  SORT_BY = 'sort_by',
-  SORT_ORDER = 'sort_order',
-  CREATED_FROM = 'created_from',
-  CREATED_TO = 'created_to',
-  HIDE_DELETED = 'hide_deleted',
+  SORT_BY = 'sortBy',
+  SORT_ORDER = 'sortOrder',
+  CREATED_FROM = 'createdFrom',
+  CREATED_TO = 'createdTo',
+  HIDE_DELETED = 'hideDeleted',
   STATUS = 'status',
 }
 
@@ -40,5 +39,3 @@ export const FILE_TYPES = {
   PNG: 'image/png',
   WEBP: 'image/webp',
 } as const;
-
-export type OmitBaseEntity<T extends IBaseEntity> = Omit<T, '_id' | 'createdAt' | 'updatedAt'>;

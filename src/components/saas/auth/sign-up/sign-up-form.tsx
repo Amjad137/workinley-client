@@ -13,6 +13,7 @@ import { UseFormReturn } from 'react-hook-form';
 
 import ProfilePictureUpload from '@/components/saas/auth/sign-up/profile-picture-upload';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { Lock } from 'lucide-react';
 import { ISignupFormValues } from './schema/sign-up.schema';
 
 type Props = {
@@ -20,10 +21,11 @@ type Props = {
   onSubmit: (data: ISignupFormValues) => void;
   isSubmitting: boolean;
   isEditing?: boolean;
+  isEmailLocked?: boolean;
   initialData?: ISignupFormValues;
 };
 
-const SignUpForm = ({ form, onSubmit, isSubmitting, isEditing }: Props) => {
+const SignUpForm = ({ form, onSubmit, isSubmitting, isEditing, isEmailLocked }: Props) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
@@ -50,10 +52,33 @@ const SignUpForm = ({ form, onSubmit, isSubmitting, isEditing }: Props) => {
               name='email'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Email</FormLabel>
+                  <FormLabel required className='flex items-center gap-1.5'>
+                    <span>Email</span>
+                    {isEmailLocked && (
+                      <span className='inline-flex items-center gap-1 text-xs text-muted-foreground font-normal bg-muted px-1.5 py-0.5 rounded'>
+                        <Lock className='w-3 h-3 text-muted-foreground' />
+                        Locked
+                      </span>
+                    )}
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder='johndoe@example.com' {...field} />
+                    <Input
+                      placeholder='johndoe@example.com'
+                      {...field}
+                      readOnly={isEmailLocked}
+                      disabled={isSubmitting}
+                      className={
+                        isEmailLocked
+                          ? 'bg-muted/70 cursor-not-allowed text-muted-foreground font-medium selection:bg-none'
+                          : ''
+                      }
+                    />
                   </FormControl>
+                  {isEmailLocked && (
+                    <FormDescription className='text-xs text-muted-foreground'>
+                      Email address is locked to your invitation.
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

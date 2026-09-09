@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 
-export type TableFilters = Partial<Record<string, any>>;
+export type FilterValue = string | number | boolean | null | undefined;
+
+export type TableFilters = Partial<Record<string, FilterValue>>;
 
 type TableStore = {
   filters: TableFilters;
-  setFilters: (key: string, value: any) => void;
+  setFilters: (key: string, value: FilterValue) => void;
   resetFilters: () => void;
 
   isFiltering: boolean;

@@ -21,3 +21,9 @@ export interface SignInRequestDTO {
   email: string;
   password: string;
 }
+
+export interface IUpdatePasswordRequestDTO {
+  userId: string;
+  currentPassword: string;
+  newPassword: string;
+}

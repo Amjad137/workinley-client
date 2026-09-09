@@ -43,7 +43,7 @@ export const SelectFilter = ({
     <div className={className}>
       {label && <Label className='mb-2 text-sm font-medium'>{label}</Label>}
       <Select
-        value={filters[paramKey] ?? ''}
+        value={filters[paramKey] != null ? String(filters[paramKey]) : ''}
         onValueChange={(value) => setFilters(paramKey, value === 'all' ? undefined : value)}
       >
         <SelectTrigger className='h-9 min-w-fit max-w-[400px] border-border hover:bg-muted/20 focus:border-none focus:ring-0 focus:ring-offset-0'>

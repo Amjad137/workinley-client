@@ -1,8 +1,6 @@
 'use client';
 
-import { Users } from 'lucide-react';
 import * as React from 'react';
-
 import {
   Sidebar,
   SidebarContent,
@@ -12,24 +10,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { ROUTES } from '@/constants/routes.constants';
-import { COMMON_SIDEBAR_MENU_ITEMS, SIDEBAR_MENU_CATEGORIES } from '@/constants/sidebar.constants';
+import { SIDEBAR_MENU_CATEGORIES, ADMIN_SIDEBAR_MENU_ITEMS } from '@/constants/sidebar.constants';
 import { VERSION } from '@/version';
 import Image from 'next/image';
 import Link from 'next/link';
 import SidebarNavGroup from '../sidebar-nav-group';
 import { SidebarUserMenu } from '../sidebar-user-menu';
-
-export const ADMIN_SIDEBAR_MENU = {
-  HOME: COMMON_SIDEBAR_MENU_ITEMS.HOME,
-  USERS: [
-    {
-      name: 'Users',
-      url: ROUTES.USERS_ROOT,
-      icon: Users,
-    },
-  ],
-};
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -41,13 +27,13 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
               <div className='flex gap-1 h-full items-start'>
                 <Image
                   src={'/assets/images/biztock-icon.svg'}
-                  alt='Biztock'
+                  alt='Workinley'
                   width={36}
                   height={36}
                   className='h-12 w-12'
                 />
                 <Link href='#' className='flex flex-col gap-0'>
-                  <span className='text-[22px] font-semibold text-primary'>Biztock</span>
+                  <span className='text-[22px] font-semibold text-primary'>Workinley</span>
                   <span className='text-[10px]'>version {VERSION}</span>
                 </Link>
               </div>
@@ -56,9 +42,20 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarNavGroup items={ADMIN_SIDEBAR_MENU.HOME} title={SIDEBAR_MENU_CATEGORIES.HOME} />
         <SidebarNavGroup
-          items={ADMIN_SIDEBAR_MENU.USERS}
+          items={ADMIN_SIDEBAR_MENU_ITEMS.HOME}
+          title={SIDEBAR_MENU_CATEGORIES.HOME}
+        />
+        <SidebarNavGroup
+          items={ADMIN_SIDEBAR_MENU_ITEMS.REPORTS}
+          title={SIDEBAR_MENU_CATEGORIES.REPORTS}
+        />
+        <SidebarNavGroup
+          items={ADMIN_SIDEBAR_MENU_ITEMS.TEAM}
+          title={SIDEBAR_MENU_CATEGORIES.TEAM}
+        />
+        <SidebarNavGroup
+          items={ADMIN_SIDEBAR_MENU_ITEMS.MANAGEMENT}
           title={SIDEBAR_MENU_CATEGORIES.USERS_MANAGEMENT}
         />
       </SidebarContent>

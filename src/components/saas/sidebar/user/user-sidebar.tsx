@@ -10,16 +10,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { COMMON_SIDEBAR_MENU_ITEMS, SIDEBAR_MENU_CATEGORIES } from '@/constants/sidebar.constants';
+import { SIDEBAR_MENU_CATEGORIES, MEMBER_SIDEBAR_MENU_ITEMS } from '@/constants/sidebar.constants';
 import { VERSION } from '@/version';
 import Image from 'next/image';
 import Link from 'next/link';
 import SidebarNavGroup from '../sidebar-nav-group';
 import { SidebarUserMenu } from '../sidebar-user-menu';
-
-export const USER_SIDEBAR_MENU = {
-  HOME: COMMON_SIDEBAR_MENU_ITEMS.HOME,
-};
 
 export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -31,13 +27,13 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
               <div className='flex gap-1 h-full items-start'>
                 <Image
                   src={'/assets/images/biztock-icon.svg'}
-                  alt='Biztock'
+                  alt='Workinley'
                   width={36}
                   height={36}
                   className='h-12 w-12'
                 />
                 <Link href='#' className='flex flex-col gap-0'>
-                  <span className='text-[22px] font-semibold text-primary'>Biztock</span>
+                  <span className='text-[22px] font-semibold text-primary'>Workinley</span>
                   <span className='text-[10px]'>version {VERSION}</span>
                 </Link>
               </div>
@@ -46,7 +42,10 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarNavGroup items={USER_SIDEBAR_MENU.HOME} title={SIDEBAR_MENU_CATEGORIES.HOME} />
+        <SidebarNavGroup
+          items={MEMBER_SIDEBAR_MENU_ITEMS.HOME}
+          title={SIDEBAR_MENU_CATEGORIES.HOME}
+        />
       </SidebarContent>
       <SidebarFooter>
         <SidebarUserMenu />

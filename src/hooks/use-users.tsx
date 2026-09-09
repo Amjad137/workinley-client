@@ -26,7 +26,7 @@ export const useGetAllUsers = (params?: IUserQuery, options?: { enabled?: boolea
   return {
     isLoading,
     data: data?.results ?? [],
-    extras: data?.extras ?? { total: 0, limit: 24, skip: 0 },
+    pagination: data?.pagination,
     error,
   };
 };

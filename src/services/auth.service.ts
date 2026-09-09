@@ -1,5 +1,6 @@
 import Axios from '@/config/api.config';
 import { ERROR_MESSAGES } from '@/constants/error.constants';
+import { IUpdatePasswordRequestDTO } from '@/dto/auth.dto';
 import { ICommonResponseDTO } from '@/dto/common.dto';
 import { toast } from '@/hooks/use-toast';
 import ErrorHandler from '@/utils/error-handler';
@@ -9,11 +10,7 @@ export const updatePassword = async ({
   userId,
   currentPassword,
   newPassword,
-}: {
-  userId: string;
-  currentPassword: string;
-  newPassword: string;
-}) => {
+}: IUpdatePasswordRequestDTO) => {
   try {
     const response = await Axios.patch<ICommonResponseDTO<{ message: string }>>(
       `/v1/user/${userId}/password`,

@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { IBasePaginationExtras } from '@/dto/common.dto';
+import { IPaginationMeta } from '@/dto/common.dto';
 import { useTableStore } from '@/stores/table-store';
 
 import {
@@ -29,7 +29,7 @@ import { useShallow } from 'zustand/react/shallow';
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  extras?: IBasePaginationExtras;
+  pagination?: IPaginationMeta;
   filterComponents?: React.ReactNode;
   actionComponents?: (props: { table: ITable<TData> }) => React.ReactNode;
   manualFiltering?: boolean;
@@ -43,7 +43,7 @@ export interface DataTableProps<TData, TValue> {
 export const DataTable = <TData, TValue>({
   columns,
   data,
-  extras,
+  pagination,
   filterComponents,
   actionComponents,
   manualFiltering = false,
@@ -96,11 +96,11 @@ export const DataTable = <TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 20,
+        pageSize: pagination?.limit ?? 20,
       },
       sorting,
     },
-    pageCount: extras ? Math.ceil(extras.total / extras.limit) : undefined,
+    pageCount: pagination?.totalPages,
   });
 
   const hasFilters = Object.keys(filters).length > 0;
@@ -169,11 +169,9 @@ export const DataTable = <TData, TValue>({
         </Table>
       </div>
 
-      {extras && (
+      {pagination && (
         <PaginationWithLinks
-          skip={extras.skip}
-          limit={extras.limit}
-          totalCount={extras.total}
+          pagination={pagination}
           pageSizeSelectOptions={{ pageSizeOptions: [10, 20, 50, 100] }}
           isTable={true}
         />

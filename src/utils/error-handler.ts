@@ -1,4 +1,5 @@
 import { ERROR_MESSAGES } from '@/constants/error.constants';
+import { toast } from '@/hooks/use-toast';
 import { AxiosError } from 'axios';
 import codes from 'http-status-codes';
 
@@ -80,3 +81,11 @@ export const getErrorMessage = (error: unknown): string => {
 export const isApiError = (error: unknown): error is AxiosError => {
   return error instanceof AxiosError;
 };
+
+export function handleError(err: unknown): never {
+  if (err instanceof AxiosError) {
+    const { errorMessage } = ErrorHandler(err);
+    toast({ title: 'Error!', description: errorMessage, variant: 'destructive' });
+  }
+  throw err;
+}

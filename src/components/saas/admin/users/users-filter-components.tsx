@@ -15,7 +15,7 @@ const UsersFilterComponents = () => {
     <div className='flex flex-wrap gap-3'>
       <TableSearchFilter
         placeholder='Search users...'
-        paramKey={API_QUERY_PARAMS.SEARCH_KEY}
+        paramKey={API_QUERY_PARAMS.SEARCH}
         className='md:w-48'
       />
 
