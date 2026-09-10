@@ -98,6 +98,7 @@ export interface IReportVersion {
     hoursEntries?: IReportHours[];
     notes?: string;
     links?: string[];
+    nextWeekPlans?: string;
   };
   submitterNote?: string;
   submittedAt: string;

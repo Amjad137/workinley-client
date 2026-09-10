@@ -112,7 +112,7 @@ export const SidebarUserMenu = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        {openEditDialog && (
+        {openEditDialog && user && (
           <EditUserDialog
             open={openEditDialog}
             setOpen={setOpenEditDialog}

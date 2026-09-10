@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-nested-conditional */
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -114,28 +115,47 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
     ? viewingSnapshotVersion?.snapshotData?.notes
     : activeReport.notes;
 
-  const displayNextWeekPlans = isViewingSnapshot ? undefined : activeReport.nextWeekPlans;
+  const displayNextWeekPlans = isViewingSnapshot
+    ? (viewingSnapshotVersion?.snapshotData?.nextWeekPlans ??
+      (viewingSnapshotVersion?.snapshotData?.plannedTasks &&
+      viewingSnapshotVersion.snapshotData.plannedTasks.length > 0
+        ? viewingSnapshotVersion.snapshotData.plannedTasks
+            .map((pt: { name?: string }) => `- ${pt.name}`)
+            .join('\n')
+        : undefined))
+    : (activeReport.nextWeekPlans ??
+      (activeReport.plannedTasks && activeReport.plannedTasks.length > 0
+        ? activeReport.plannedTasks.map((pt) => `- ${pt.name}`).join('\n')
+        : undefined));
 
-  const displayHoursBreakdown = isViewingSnapshot
-    ? (() => {
-        const entries = viewingSnapshotVersion?.snapshotData?.hoursEntries;
-        if (!entries || entries.length === 0) return null;
-        const breakdown: Record<string, number> = {
-          development: 0,
-          testing: 0,
-          meetings: 0,
-          documentation: 0,
-          other: 0,
-        };
-        for (const entry of entries) {
-          const cat = entry.category?.toLowerCase();
-          if (cat in breakdown) {
-            breakdown[cat] += Number(entry.hours) || 0;
-          }
-        }
-        return breakdown;
-      })()
-    : activeReport.hoursBreakdown;
+  const displayHoursBreakdown = (() => {
+    if (!isViewingSnapshot && activeReport.hoursBreakdown) {
+      return activeReport.hoursBreakdown;
+    }
+
+    const entries = isViewingSnapshot
+      ? viewingSnapshotVersion?.snapshotData?.hoursEntries
+      : activeReport.hoursEntries;
+
+    if (!entries || entries.length === 0) return null;
+
+    const breakdown: Record<string, number> = {
+      development: 0,
+      testing: 0,
+      meetings: 0,
+      documentation: 0,
+      other: 0,
+    };
+
+    for (const entry of entries) {
+      const cat = entry.category?.toLowerCase();
+      if (cat in breakdown) {
+        breakdown[cat] += Number(entry.hours) || 0;
+      }
+    }
+
+    return breakdown;
+  })();
 
   const totalHours = displayHoursBreakdown
     ? Object.values(displayHoursBreakdown).reduce((sum: number, val) => sum + (Number(val) || 0), 0)
@@ -153,7 +173,8 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
     !hasBlockers &&
     !hasAchievements &&
     !displayNotes &&
-    !displayNextWeekPlans;
+    !displayNextWeekPlans &&
+    totalHours <= 0;
 
   return (
     <Dialog open={open} onOpenChange={setOpen} modal>
@@ -235,7 +256,7 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
               <HoursDetailSection hoursBreakdown={displayHoursBreakdown} totalHours={totalHours} />
 
               {/* Next Week Plans */}
-              {displayNextWeekPlans && (
+              {displayNextWeekPlans && !hasPlannedTasks && (
                 <section>
                   <h4 className='text-xs font-semibold uppercase tracking-wide mb-2 text-foreground'>
                     Next Week Plans

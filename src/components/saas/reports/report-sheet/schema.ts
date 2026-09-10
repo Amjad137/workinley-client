@@ -18,6 +18,16 @@ export const taskSchema = yup.object({
   projectId: yup.string().optional(),
 });
 
+export const plannedTaskSchema = yup.object({
+  name: yup.string().required('Plan name is required').max(300),
+  priority: yup
+    .mixed<TASK_PRIORITY>()
+    .oneOf(Object.values(TASK_PRIORITY))
+    .default(TASK_PRIORITY.MEDIUM),
+  plannedHours: yup.number().min(0).default(0),
+  projectId: yup.string().optional(),
+});
+
 export const blockerSchema = yup.object({
   description: yup.string().required('Description is required').max(500),
   isKeyBlocker: yup.boolean().optional(),
@@ -44,6 +54,7 @@ export const reportSchema = yup.object({
   year: yup.number().required(),
   projectId: yup.string().optional(),
   tasks: yup.array(taskSchema).defined().default([]),
+  plannedTasks: yup.array(plannedTaskSchema).defined().default([]),
   blockers: yup.array(blockerSchema).defined().default([]),
   achievements: yup.array(achievementSchema).defined().default([]),
   nextWeekPlans: yup.string().optional().max(3000),
@@ -79,6 +90,7 @@ export function buildInitialFormValues(report?: IWeeklyReport | null): FormValue
       year: weekDefaults.year,
       projectId: '',
       tasks: [],
+      plannedTasks: [],
       blockers: [],
       achievements: [],
       nextWeekPlans: '',
@@ -110,6 +122,25 @@ export function buildInitialFormValues(report?: IWeeklyReport | null): FormValue
     }
   }
 
+  const plannedTasks =
+    report.plannedTasks && report.plannedTasks.length > 0
+      ? report.plannedTasks.map((pt) => ({
+          name: pt.name ?? '',
+          priority: pt.priority ?? TASK_PRIORITY.MEDIUM,
+          plannedHours: pt.plannedHours ?? 0,
+          projectId: pt.projectId ?? report.projectId ?? report.project?.id ?? '',
+        }))
+      : (report.nextWeekPlans || '')
+          .split('\n')
+          .map((l) => l.replace(/^[-*•\d.)\s]+/, '').trim())
+          .filter(Boolean)
+          .map((name) => ({
+            name,
+            priority: TASK_PRIORITY.MEDIUM,
+            plannedHours: 0,
+            projectId: report.projectId ?? report.project?.id ?? '',
+          }));
+
   return {
     weekStartDate: report.weekStartDate
       ? format(new Date(report.weekStartDate), 'yyyy-MM-dd')
@@ -134,6 +165,7 @@ export function buildInitialFormValues(report?: IWeeklyReport | null): FormValue
       deliverable: t.deliverable ?? '',
       projectId: t.projectId ?? report.projectId ?? report.project?.id ?? '',
     })),
+    plannedTasks,
     blockers: (report.blockers ?? []).map((b) => ({
       description: b.description ?? '',
       isKeyBlocker: b.isKeyBlocker ?? b.isKeyIssue ?? false,
@@ -143,7 +175,9 @@ export function buildInitialFormValues(report?: IWeeklyReport | null): FormValue
       description: a.description ?? '',
       isKeyAchievement: a.isKeyAchievement ?? false,
     })),
-    nextWeekPlans: report.nextWeekPlans ?? '',
+    nextWeekPlans:
+      report.nextWeekPlans ||
+      (plannedTasks.length > 0 ? plannedTasks.map((pt) => `- ${pt.name}`).join('\n') : ''),
     hoursBreakdown,
     notes: report.notes ?? '',
   };

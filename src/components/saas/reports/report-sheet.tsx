@@ -66,11 +66,26 @@ const ReportSheet = ({ open, setOpen, report }: Props) => {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      const payload = {
+        ...values,
+        projectId: values.projectId || undefined,
+        tasks: values.tasks?.map((t) => ({
+          ...t,
+          projectId: t.projectId || values.projectId || undefined,
+        })),
+        plannedTasks: values.plannedTasks?.map((pt, i) => ({
+          ...pt,
+          projectId: pt.projectId || values.projectId || undefined,
+          orderIndex: i,
+        })),
+        nextWeekPlans: values.plannedTasks?.map((pt) => `- ${pt.name}`).join('\n'),
+      };
+
       if (isEditMode && report) {
-        await update({ id: report.id, data: values });
+        await update({ id: report.id, data: payload });
         toast({ title: 'Saved', description: 'Report updated successfully' });
       } else {
-        await create(values);
+        await create(payload);
         toast({ title: 'Created', description: 'Report draft created' });
       }
       setOpen(false);

@@ -6,6 +6,7 @@ import { IUserQuery } from '@/dto/user.dto';
 import { DeepPartial } from '@/types/common.type';
 import { IUser } from '@/types/user.type';
 import { handleError } from '@/utils/error-handler';
+import { useAuthStore } from '@/stores/auth.store';
 
 const BASE = '/v1/users';
 
@@ -41,7 +42,10 @@ export const updateUser = async (
   data: DeepPartial<ISignupFormValues>,
 ): Promise<IUser | null> => {
   try {
-    const response = await Axios.patch<ICommonResponseDTO<IUser>>(`${BASE}/${userId}`, data);
+    const currentUserId = useAuthStore.getState().user?.id;
+    const isMe = !userId || userId === 'me' || userId === currentUserId;
+    const url = isMe ? `${BASE}/me` : `${BASE}/${userId}`;
+    const response = await Axios.patch<ICommonResponseDTO<IUser>>(url, data);
     return response.data.data || null;
   } catch (err) {
     return handleError(err);

@@ -12,6 +12,7 @@ import ErrorHandler from '@/utils/error-handler';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AxiosError } from 'axios';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 type Props = {
@@ -24,34 +25,49 @@ const EditUserDialog = ({ open, setOpen, userData }: Props) => {
   const form = useForm<ISignupFormValues>({
     resolver: yupResolver(getSignupSchema('edit')),
     defaultValues: {
-      name: userData.name ?? '',
-      phoneNumber: userData.phoneNumber ?? '',
-      profilePicture: userData.image ?? '',
-      address: userData.address ?? '',
+      name: userData?.name ?? '',
+      phoneNumber: userData?.phoneNumber ?? '',
+      profilePicture: userData?.image ?? '',
+      email: userData?.email ?? '',
+      address: userData?.address ?? '',
     },
   });
 
   const { mutateAsync: updateUser, isPending: isLoading } = useUpdateUser();
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isSubmittingUpdate, setIsSubmittingUpdate] = useState(false);
 
-  const isSubmitting = form.formState.isSubmitting;
-  const { setValue } = form;
+  const { setValue, reset } = form;
+
+  useEffect(() => {
+    if (open && userData) {
+      reset({
+        name: userData.name ?? '',
+        phoneNumber: userData.phoneNumber ?? '',
+        email: userData.email ?? '',
+        profilePicture: userData.image ?? '',
+        address: userData.address ?? '',
+      });
+    }
+  }, [open, userData, reset]);
 
   const onSubmit = async (values: ISignupFormValues) => {
     let uploadedImageKey: string | undefined; // Track uploaded image for cleanup
 
     try {
-      let imageUrl: string | undefined = userData.image ?? ''; // Keep existing URL by default
+      let imageUrl: string | undefined = userData?.image ?? ''; // Keep existing URL by default
 
       // Upload profile picture first if a new file is provided
       if (values.profilePicture && values.profilePicture instanceof File) {
         try {
+          setIsUploadingImage(true);
           const { uploadPublicImage } = await import('@/services/upload.service');
           const { S3_FOLDERS } = await import('@/constants/s3.constants');
           const { extractS3KeyFromUrl } = await import('@/utils/s3-utils');
           const uploadResult = await uploadPublicImage(
             values.profilePicture,
             S3_FOLDERS.PROFILE_IMAGES,
-            extractS3KeyFromUrl(userData.image), // Extract old key for replacement
+            extractS3KeyFromUrl(userData?.image), // Extract old key for replacement
           );
 
           imageUrl = uploadResult.url; // Use new public URL
@@ -64,6 +80,8 @@ const EditUserDialog = ({ open, setOpen, userData }: Props) => {
             variant: 'destructive',
           });
           // Continue with update even if profile picture upload fails
+        } finally {
+          setIsUploadingImage(false);
         }
       }
 
@@ -75,6 +93,7 @@ const EditUserDialog = ({ open, setOpen, userData }: Props) => {
         image: imageUrl,
       };
 
+      setIsSubmittingUpdate(true);
       await updateUser({ userId: userData.id, userData: updateData });
 
       // Update form field with new URL after successful upload
@@ -86,6 +105,7 @@ const EditUserDialog = ({ open, setOpen, userData }: Props) => {
         title: 'User Updated',
         description: 'User updated successfully!',
       });
+      setOpen(false);
     } catch (error) {
       // Clean up uploaded image if update failed
       if (uploadedImageKey) {
@@ -119,6 +139,8 @@ const EditUserDialog = ({ open, setOpen, userData }: Props) => {
           variant: 'destructive',
         });
       }
+    } finally {
+      setIsSubmittingUpdate(false);
     }
   };
 
@@ -136,7 +158,13 @@ const EditUserDialog = ({ open, setOpen, userData }: Props) => {
             <Loader2 className='h-8 w-8 text-yellow-400 animate-spin' />
           </div>
         ) : (
-          <SignUpForm form={form} onSubmit={onSubmit} isSubmitting={isSubmitting} isEditing />
+          <SignUpForm
+            form={form}
+            onSubmit={onSubmit}
+            isSubmitting={isSubmittingUpdate || isUploadingImage}
+            isEditing
+            isEmailLocked
+          />
         )}
       </DialogContent>
     </Dialog>
