@@ -28,7 +28,6 @@ import {
 import { USER_ROLE } from '@/constants/user.constants';
 import { useCreateUserInvitation } from '@/hooks/use-user-invitations';
 import { toast } from '@/hooks/use-toast';
-import { getErrorMessage } from '@/utils/error-handler';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Loader2, Mail, Shield } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -60,35 +59,27 @@ export const CreateInvitationDialog = ({ open, setOpen }: Props) => {
   });
 
   const onSubmit = async (values: CreateInvitationFormValues) => {
+    const result = await createInvitation({
+      email: values.email.trim().toLowerCase(),
+      role: values.role as USER_ROLE,
+    });
+
+    // Try copying link to clipboard for admin convenience
+    const inviteUrl =
+      result.inviteLink ||
+      `${window.location.origin}/auth/sign-up?invitation_code=${result.invitationCode}`;
     try {
-      const result = await createInvitation({
-        email: values.email.trim().toLowerCase(),
-        role: values.role as USER_ROLE,
-      });
-
-      // Try copying link to clipboard for admin convenience
-      const inviteUrl =
-        result.inviteLink ||
-        `${window.location.origin}/auth/sign-up?invitation_code=${result.invitationCode}`;
-      try {
-        await navigator.clipboard.writeText(inviteUrl);
-        toast({
-          title: 'Invite Link Copied',
-          description: `Invitation link copied to clipboard for ${result.email}`,
-        });
-      } catch {
-        // Ignore clipboard failure in restricted browser context
-      }
-
-      form.reset();
-      setOpen(false);
-    } catch (error) {
+      await navigator.clipboard.writeText(inviteUrl);
       toast({
-        title: 'Error!',
-        description: getErrorMessage(error),
-        variant: 'destructive',
+        title: 'Invite Link Copied',
+        description: `Invitation link copied to clipboard for ${result.email}`,
       });
+    } catch {
+      // Ignore clipboard failure in restricted browser context
     }
+
+    form.reset();
+    setOpen(false);
   };
 
   return (

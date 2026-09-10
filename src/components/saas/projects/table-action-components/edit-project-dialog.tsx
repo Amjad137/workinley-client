@@ -28,13 +28,11 @@ import {
 import { useUpdateProject } from '@/hooks/use-projects';
 import { IProject } from '@/dto/project.dto';
 import { PROJECT_STATUS } from '@/constants/project.constants';
-import { getErrorMessage } from '@/utils/error-handler';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Loader2, Pencil } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { toast } from '@/hooks/use-toast';
 
 const schema = yup.object({
   name: yup.string().required('Required').min(2).max(100),
@@ -82,16 +80,8 @@ const EditProjectDialog = ({ open, setOpen, project }: Props) => {
   }, [open, project, form]);
 
   const onSubmit = async (values: FormValues) => {
-    try {
-      await update({ id: project.id, data: values });
-      setOpen(false);
-    } catch (error) {
-      toast({
-        title: 'Error!',
-        description: getErrorMessage(error),
-        variant: 'destructive',
-      });
-    }
+    await update({ id: project.id, data: values });
+    setOpen(false);
   };
 
   return (
@@ -146,11 +136,7 @@ const EditProjectDialog = ({ open, setOpen, project }: Props) => {
                   <FormItem>
                     <FormLabel>Color</FormLabel>
                     <FormControl>
-                      <input
-                        type='color'
-                        className='h-10 w-16 rounded-md border border-input cursor-pointer'
-                        {...field}
-                      />
+                      <Input type='color' className='h-10 w-20 cursor-pointer p-1' {...field} />
                     </FormControl>
                   </FormItem>
                 )}

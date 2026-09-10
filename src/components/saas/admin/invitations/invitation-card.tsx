@@ -175,15 +175,18 @@ const InvitationCard = ({ invitation }: Props) => {
                   </DropdownMenuItem>
                 )}
 
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  onClick={() => setDeleteDialogOpen(true)}
-                  className='cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10'
-                >
-                  <Trash2 className='h-4 w-4 mr-2' />
-                  Revoke Invitation
-                </DropdownMenuItem>
+                {!invitation.isUsed && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className='cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10'
+                    >
+                      <Trash2 className='h-4 w-4 mr-2' />
+                      Revoke Invitation
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

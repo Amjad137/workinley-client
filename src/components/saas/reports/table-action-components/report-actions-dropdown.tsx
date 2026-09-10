@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +9,7 @@ import {
 import { IWeeklyReport } from '@/dto/report.dto';
 import { REPORT_STATUS } from '@/constants/report.constants';
 import { Eye, MoreVertical, Pencil, Send, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import ReportSheet from '../report-sheet';
 import SubmitReportDialog from './submit-report-dialog';
 import DeleteReportDialog from './delete-report-dialog';
@@ -16,9 +17,11 @@ import ReportDetailDialog from './report-detail-dialog';
 
 type Props = {
   rowData: IWeeklyReport;
+  trigger?: React.ReactNode;
+  onEdit?: (report: IWeeklyReport) => void;
 };
 
-const ReportActionsDropdown = ({ rowData }: Props) => {
+const ReportActionsDropdown = ({ rowData, trigger, onEdit }: Props) => {
   const [openEditSheet, setOpenEditSheet] = useState(false);
   const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -40,15 +43,34 @@ const ReportActionsDropdown = ({ rowData }: Props) => {
   return (
     <>
       <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
-        <DropdownMenuTrigger className='items-right w-full' asChild>
-          <MoreVertical size={15} className='cursor-pointer' />
+        <DropdownMenuTrigger asChild>
+          {trigger ?? (
+            <Button
+              variant='ghost'
+              size='icon'
+              className='h-8 w-8 text-muted-foreground hover:text-foreground shrink-0'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className='h-4 w-4' />
+              <span className='sr-only'>Actions</span>
+            </Button>
+          )}
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='mr-7' align='start'>
+        <DropdownMenuContent className='w-48' align='end' onClick={(e) => e.stopPropagation()}>
           <DropdownMenuItem onClick={() => openAction(setOpenDetailDialog)}>
             <Eye className='mr-2 h-4 w-4' /> View Details
           </DropdownMenuItem>
           {canEdit && (
-            <DropdownMenuItem onClick={() => openAction(setOpenEditSheet)}>
+            <DropdownMenuItem
+              onClick={() => {
+                if (onEdit) {
+                  setOpenDropdown(false);
+                  onEdit(rowData);
+                } else {
+                  openAction(setOpenEditSheet);
+                }
+              }}
+            >
               <Pencil className='mr-2 h-4 w-4' /> Edit
             </DropdownMenuItem>
           )}

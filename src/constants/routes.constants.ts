@@ -25,8 +25,6 @@ export const ROUTES = {
   REPORT_DETAIL: (id: string) => `/portal/reports/${id}`,
   REPORT_NEW: '/portal/reports/new',
   PROJECTS_ROOT: '/portal/projects',
-  TEAM_ROOT: '/portal/team',
-  TEAM_MEMBER: (userId: string) => `/portal/team/${userId}`,
 
   // Compatibility aliases
   USERS_ROOT: '/portal/staff/users',
@@ -60,5 +58,4 @@ export const MEMBER_ROUTES = {
   DASHBOARD: ROUTES.USER_DASHBOARD,
   REPORTS: ROUTES.REPORTS_ROOT,
   PROJECTS: ROUTES.PROJECTS_ROOT,
-  TEAM: ROUTES.TEAM_ROOT,
 };

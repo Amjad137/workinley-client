@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-nested-conditional */
 'use client';
 
 import Link from 'next/link';
@@ -21,7 +22,7 @@ import { toast } from '@/hooks/use-toast';
 import { useValidateInvitation } from '@/hooks/use-user-invitations';
 import { uploadPublicImage } from '@/services/upload.service';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { AlertCircle, CheckCircle2, Loader2, Mail, Shield } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Shield } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SignupContent = () => {
@@ -39,7 +40,6 @@ const SignupContent = () => {
     isLoading: isValidating,
     data: validationData,
     isValid: isInvitationValid,
-    error: validationError,
   } = useValidateInvitation(invitationCode ?? undefined, {
     enabled: !!invitationCode,
   });

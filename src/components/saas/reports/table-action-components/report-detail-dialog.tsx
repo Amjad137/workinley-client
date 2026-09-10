@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,18 +13,18 @@ import {
 } from '@/constants/report.constants';
 import { IWeeklyReport } from '@/dto/report.dto';
 import { useGetReportById } from '@/hooks/use-reports';
-import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { CalendarDays, FileText } from 'lucide-react';
+
 import {
-  AlertTriangle,
-  CalendarDays,
-  CheckCircle2,
-  Clock,
-  FileText,
-  ListTodo,
-  MessageSquare,
-  Trophy,
-} from 'lucide-react';
+  VersionSwitcherBar,
+  SnapshotNoticeBanner,
+  TasksDetailSection,
+  BlockersDetailSection,
+  AchievementsDetailSection,
+  HoursDetailSection,
+  ReviewHistorySection,
+} from './report-detail-dialog/index';
 
 type Props = {
   open: boolean;
@@ -32,29 +33,43 @@ type Props = {
   reportId?: string;
 };
 
-const priorityColors: Record<string, string> = {
-  LOW: 'text-green-500',
-  MEDIUM: 'text-yellow-500',
-  HIGH: 'text-orange-500',
-  CRITICAL: 'text-red-500',
-};
-
-const statusColors: Record<string, string> = {
-  NOT_STARTED: 'text-muted-foreground',
-  IN_PROGRESS: 'text-blue-500',
-  COMPLETED: 'text-green-500',
-  BLOCKED: 'text-destructive',
-};
-
 const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
   const targetId = reportId || report?.id || '';
 
-  // Fetch full report on demand with relations (tasks, blockers, achievements, hours, reviews)
   const { data: fetchedReport, isLoading } = useGetReportById(targetId, {
     enabled: open && !!targetId,
   });
 
   const activeReport = fetchedReport || report;
+
+  const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (open && activeReport?.currentVersion) {
+      setSelectedVersion(activeReport.currentVersion);
+    }
+  }, [open, activeReport?.currentVersion]);
+
+  const allVersions = useMemo(() => {
+    if (!activeReport) return [];
+    return [...(activeReport.versions || [])].sort((a, b) => a.versionNumber - b.versionNumber);
+  }, [activeReport]);
+
+  const currentVersion = activeReport?.currentVersion ?? 1;
+
+  const allVersionNumbers = useMemo(() => {
+    const set = new Set<number>();
+    allVersions.forEach((v) => set.add(v.versionNumber));
+    if (currentVersion) set.add(currentVersion);
+    return Array.from(set).sort((a, b) => a - b);
+  }, [allVersions, currentVersion]);
+
+  const hasVersions = allVersionNumbers.length > 1;
+  const effectiveVersion = selectedVersion ?? currentVersion;
+  const isViewingSnapshot = effectiveVersion !== currentVersion;
+  const viewingSnapshotVersion = isViewingSnapshot
+    ? allVersions.find((v) => v.versionNumber === effectiveVersion)
+    : null;
 
   if (!activeReport && isLoading) {
     return (
@@ -77,15 +92,59 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
 
   const weekLabel = `Week ${activeReport.weekNumber} / ${activeReport.year}`;
   const status = activeReport.status as REPORT_STATUS;
-  const hb = activeReport.hoursBreakdown;
-  const totalHours = hb
-    ? Object.values(hb).reduce((sum: number, val) => sum + (Number(val) || 0), 0)
+
+  // Resolve snapshot vs current version data
+  const displayTasks = isViewingSnapshot
+    ? (viewingSnapshotVersion?.snapshotData?.tasks ?? [])
+    : (activeReport.tasks ?? []);
+
+  const displayPlannedTasks = isViewingSnapshot
+    ? (viewingSnapshotVersion?.snapshotData?.plannedTasks ?? [])
+    : (activeReport.plannedTasks ?? []);
+
+  const displayBlockers = isViewingSnapshot
+    ? (viewingSnapshotVersion?.snapshotData?.blockers ?? [])
+    : (activeReport.blockers ?? []);
+
+  const displayAchievements = isViewingSnapshot
+    ? (viewingSnapshotVersion?.snapshotData?.achievements ?? [])
+    : (activeReport.achievements ?? []);
+
+  const displayNotes = isViewingSnapshot
+    ? viewingSnapshotVersion?.snapshotData?.notes
+    : activeReport.notes;
+
+  const displayNextWeekPlans = isViewingSnapshot ? undefined : activeReport.nextWeekPlans;
+
+  const displayHoursBreakdown = isViewingSnapshot
+    ? (() => {
+        const entries = viewingSnapshotVersion?.snapshotData?.hoursEntries;
+        if (!entries || entries.length === 0) return null;
+        const breakdown: Record<string, number> = {
+          development: 0,
+          testing: 0,
+          meetings: 0,
+          documentation: 0,
+          other: 0,
+        };
+        for (const entry of entries) {
+          const cat = entry.category?.toLowerCase();
+          if (cat in breakdown) {
+            breakdown[cat] += Number(entry.hours) || 0;
+          }
+        }
+        return breakdown;
+      })()
+    : activeReport.hoursBreakdown;
+
+  const totalHours = displayHoursBreakdown
+    ? Object.values(displayHoursBreakdown).reduce((sum: number, val) => sum + (Number(val) || 0), 0)
     : 0;
 
-  const hasTasks = activeReport.tasks && activeReport.tasks.length > 0;
-  const hasPlannedTasks = activeReport.plannedTasks && activeReport.plannedTasks.length > 0;
-  const hasBlockers = activeReport.blockers && activeReport.blockers.length > 0;
-  const hasAchievements = activeReport.achievements && activeReport.achievements.length > 0;
+  const hasTasks = displayTasks.length > 0;
+  const hasPlannedTasks = displayPlannedTasks.length > 0;
+  const hasBlockers = displayBlockers.length > 0;
+  const hasAchievements = displayAchievements.length > 0;
   const hasReviews = activeReport.reviews && activeReport.reviews.length > 0;
 
   const isContentEmpty =
@@ -93,12 +152,13 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
     !hasPlannedTasks &&
     !hasBlockers &&
     !hasAchievements &&
-    !activeReport.notes &&
-    !activeReport.nextWeekPlans;
+    !displayNotes &&
+    !displayNextWeekPlans;
 
   return (
     <Dialog open={open} onOpenChange={setOpen} modal>
-      <DialogContent className='max-w-2xl max-h-[90vh] flex flex-col p-0'>
+      <DialogContent className='max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden'>
+        {/* Dialog Header */}
         <DialogHeader className='px-6 pt-6 pb-4 border-b flex-shrink-0'>
           <div className='flex items-center justify-between'>
             <DialogTitle className='flex items-center gap-2'>
@@ -123,7 +183,20 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
           </div>
         </DialogHeader>
 
-        <ScrollArea className='flex-1 px-6 py-4'>
+        {/* Version Switcher Bar */}
+        {hasVersions && (
+          <VersionSwitcherBar
+            allVersionNumbers={allVersionNumbers}
+            currentVersion={currentVersion}
+            effectiveVersion={effectiveVersion}
+            isViewingSnapshot={isViewingSnapshot}
+            onSelectVersion={setSelectedVersion}
+            onResetToLatest={() => setSelectedVersion(currentVersion)}
+          />
+        )}
+
+        {/* Scrollable Content Body */}
+        <ScrollArea className='flex-1 px-6 py-4 min-h-0 overflow-y-auto'>
           {isLoading && !fetchedReport ? (
             <div className='space-y-4 py-2'>
               <div className='space-y-2'>
@@ -139,169 +212,48 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
             </div>
           ) : (
             <div className='space-y-6'>
-              {/* Actual Completed Tasks */}
-              {hasTasks && (
-                <section>
-                  <h4 className='text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5 text-foreground'>
-                    <CheckCircle2 size={14} className='text-primary' /> Tasks (
-                    {activeReport.tasks?.length})
-                  </h4>
-                  <div className='space-y-2'>
-                    {activeReport.tasks?.map((task, i) => (
-                      <div
-                        key={task.id ?? i}
-                        className='bg-muted/40 rounded-lg p-3 border border-border/50'
-                      >
-                        <div className='flex items-start justify-between gap-2'>
-                          <span className='text-sm font-medium text-foreground'>{task.name}</span>
-                          <div className='flex items-center gap-1.5 shrink-0'>
-                            <span
-                              className={cn('text-xs font-semibold', priorityColors[task.priority])}
-                            >
-                              {task.priority}
-                            </span>
-                            <span className={cn('text-xs', statusColors[task.status])}>
-                              {task.status.replace('_', ' ')}
-                            </span>
-                          </div>
-                        </div>
-                        <div className='mt-2 grid grid-cols-4 gap-2 text-xs text-muted-foreground'>
-                          <span>
-                            Planned: {task.plannedPercent ?? task.plannedCompletionPercent ?? 0}%
-                          </span>
-                          <span>
-                            Actual: {task.actualPercent ?? task.actualCompletionPercent ?? 0}%
-                          </span>
-                          <span>Est: {task.plannedHours ?? 0}h</span>
-                          <span>Spent: {task.spentHours ?? task.actualHours ?? 0}h</span>
-                        </div>
-                        {task.deliverable && (
-                          <div className='mt-1.5 text-xs text-blue-500 truncate'>
-                            🔗 {task.deliverable}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </section>
+              {/* Snapshot Notice Banner */}
+              {isViewingSnapshot && viewingSnapshotVersion && (
+                <SnapshotNoticeBanner
+                  versionNumber={viewingSnapshotVersion.versionNumber}
+                  submittedAt={viewingSnapshotVersion.submittedAt}
+                  currentVersion={currentVersion}
+                  onBackToLatest={() => setSelectedVersion(currentVersion)}
+                />
               )}
 
-              {/* Planned Tasks */}
-              {hasPlannedTasks && (
-                <section>
-                  <h4 className='text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5 text-foreground'>
-                    <ListTodo size={14} className='text-blue-500' /> Planned Tasks (
-                    {activeReport.plannedTasks?.length})
-                  </h4>
-                  <div className='space-y-2'>
-                    {activeReport.plannedTasks?.map((task, i) => (
-                      <div
-                        key={task.id ?? i}
-                        className='bg-muted/30 rounded-lg p-3 border border-border/50 flex items-center justify-between gap-3'
-                      >
-                        <span className='text-sm font-medium text-foreground'>{task.name}</span>
-                        <div className='flex items-center gap-3 shrink-0 text-xs text-muted-foreground'>
-                          <span className={cn('font-semibold', priorityColors[task.priority])}>
-                            {task.priority}
-                          </span>
-                          <span>{task.plannedHours}h planned</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+              {/* Tasks & Planned Tasks */}
+              <TasksDetailSection tasks={displayTasks} plannedTasks={displayPlannedTasks} />
 
               {/* Blockers */}
-              {hasBlockers && (
-                <section>
-                  <h4 className='text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5 text-foreground'>
-                    <AlertTriangle size={14} className='text-orange-500' /> Blockers (
-                    {activeReport.blockers?.length})
-                  </h4>
-                  <div className='space-y-2'>
-                    {activeReport.blockers?.map((b, i) => (
-                      <div
-                        key={b.id ?? i}
-                        className='flex items-start gap-2 bg-orange-500/10 rounded-lg p-3 border border-orange-200/40 dark:border-orange-900/30'
-                      >
-                        <span className='text-sm flex-1 text-foreground'>{b.description}</span>
-                        {(b.isKeyBlocker || b.isKeyIssue) && (
-                          <Badge variant='destructive' className='text-xs shrink-0'>
-                            Key
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+              <BlockersDetailSection blockers={displayBlockers} />
 
               {/* Achievements */}
-              {hasAchievements && (
-                <section>
-                  <h4 className='text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5 text-foreground'>
-                    <Trophy size={14} className='text-amber-500' /> Achievements (
-                    {activeReport.achievements?.length})
-                  </h4>
-                  <div className='space-y-2'>
-                    {activeReport.achievements?.map((a, i) => (
-                      <div
-                        key={a.id ?? i}
-                        className='flex items-start gap-2 bg-amber-500/10 rounded-lg p-3 border border-amber-200/40 dark:border-amber-900/30'
-                      >
-                        <span className='text-sm flex-1 text-foreground'>{a.description}</span>
-                        {a.isKeyAchievement && (
-                          <Badge className='text-xs shrink-0 bg-amber-500 hover:bg-amber-600 text-white'>
-                            Key
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+              <AchievementsDetailSection achievements={displayAchievements} />
 
               {/* Hours Breakdown */}
-              {hb && totalHours > 0 && (
-                <section>
-                  <h4 className='text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5 text-foreground'>
-                    <Clock size={14} className='text-blue-500' /> Hours ({totalHours}h total)
-                  </h4>
-                  <div className='grid grid-cols-5 gap-3'>
-                    {Object.entries(hb).map(([k, v]) => (
-                      <div
-                        key={k}
-                        className='text-center bg-muted/40 rounded-lg p-2 border border-border/50'
-                      >
-                        <div className='text-lg font-bold text-foreground'>{String(v)}</div>
-                        <div className='text-xs text-muted-foreground capitalize'>{k}</div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+              <HoursDetailSection hoursBreakdown={displayHoursBreakdown} totalHours={totalHours} />
 
               {/* Next Week Plans */}
-              {activeReport.nextWeekPlans && (
+              {displayNextWeekPlans && (
                 <section>
                   <h4 className='text-xs font-semibold uppercase tracking-wide mb-2 text-foreground'>
                     Next Week Plans
                   </h4>
                   <div className='text-sm text-muted-foreground whitespace-pre-line bg-muted/30 rounded-lg p-3 border border-border/50'>
-                    {activeReport.nextWeekPlans}
+                    {displayNextWeekPlans}
                   </div>
                 </section>
               )}
 
-              {/* Notes */}
-              {activeReport.notes && (
+              {/* Additional Notes */}
+              {displayNotes && (
                 <section>
                   <h4 className='text-xs font-semibold uppercase tracking-wide mb-2 text-foreground'>
                     Notes
                   </h4>
                   <div className='text-sm text-muted-foreground whitespace-pre-line bg-muted/30 rounded-lg p-3 border border-border/50'>
-                    {activeReport.notes}
+                    {displayNotes}
                   </div>
                 </section>
               )}
@@ -312,41 +264,25 @@ const ReportDetailDialog = ({ open, setOpen, report, reportId }: Props) => {
                   <FileText className='h-8 w-8 text-muted-foreground/40 mb-1.5' />
                   <p className='text-sm font-medium text-foreground'>No Detailed Entries</p>
                   <p className='text-xs text-muted-foreground mt-0.5 max-w-xs'>
-                    This report has no tasks, blockers, or achievements recorded yet.
+                    {isViewingSnapshot
+                      ? `Version ${effectiveVersion} snapshot has no tasks, blockers, or achievements recorded.`
+                      : 'This report has no tasks, blockers, or achievements recorded yet.'}
                   </p>
                 </div>
               )}
 
-              {/* Reviews */}
+              {/* Review History */}
               {hasReviews && (
                 <>
                   <Separator />
-                  <section>
-                    <h4 className='text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5 text-foreground'>
-                      <MessageSquare size={14} className='text-primary' /> Review History
-                    </h4>
-                    <div className='space-y-3'>
-                      {activeReport.reviews?.map((r) => (
-                        <div key={r.id} className='rounded-lg border p-3 bg-card'>
-                          <div className='flex items-center justify-between mb-1'>
-                            <span className='text-xs font-semibold text-foreground'>
-                              {r.reviewer?.name}
-                            </span>
-                            <Badge
-                              variant={r.action === 'APPROVE' ? 'default' : 'destructive'}
-                              className='text-xs'
-                            >
-                              {r.action === 'APPROVE' ? 'Approved' : 'Changes Requested'}
-                            </Badge>
-                          </div>
-                          <p className='text-sm text-muted-foreground'>{r.comment}</p>
-                          <p className='text-xs text-muted-foreground/70 mt-1'>
-                            {format(new Date(r.createdAt), 'MMM d, HH:mm')} • v{r.versionNumber}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
+                  <ReviewHistorySection
+                    reviews={activeReport.reviews}
+                    allVersions={allVersions}
+                    currentVersion={currentVersion}
+                    effectiveVersion={effectiveVersion}
+                    isViewingSnapshot={isViewingSnapshot}
+                    onSelectVersion={setSelectedVersion}
+                  />
                 </>
               )}
             </div>

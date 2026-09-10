@@ -19,12 +19,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateProject } from '@/hooks/use-projects';
-import { getErrorMessage } from '@/utils/error-handler';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Loader2, FolderPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { toast } from '@/hooks/use-toast';
 
 const schema = yup.object({
   name: yup.string().required('Project name is required').min(2).max(100),
@@ -52,17 +50,9 @@ const CreateProjectDialog = ({ open, setOpen }: Props) => {
   });
 
   const onSubmit = async (values: FormValues) => {
-    try {
-      await create(values);
-      setOpen(false);
-      form.reset();
-    } catch (error) {
-      toast({
-        title: 'Error!',
-        description: getErrorMessage(error),
-        variant: 'destructive',
-      });
-    }
+    await create(values);
+    setOpen(false);
+    form.reset();
   };
 
   return (
@@ -118,11 +108,7 @@ const CreateProjectDialog = ({ open, setOpen }: Props) => {
                   <FormItem>
                     <FormLabel>Color</FormLabel>
                     <FormControl>
-                      <input
-                        type='color'
-                        className='h-10 w-16 rounded-md border border-input cursor-pointer'
-                        {...field}
-                      />
+                      <Input type='color' className='h-10 w-20 cursor-pointer p-1' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
