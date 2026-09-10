@@ -26,11 +26,11 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
             <SidebarMenuButton asChild className='data-[slot=sidebar-menu-button]:!p-1.5'>
               <div className='flex gap-1 h-full items-start'>
                 <Image
-                  src={'/assets/images/biztock-icon.svg'}
+                  src={'/assets/images/workinley-icon.svg'}
                   alt='Workinley'
                   width={36}
                   height={36}
-                  className='h-12 w-12'
+                  className='h-12 w-12 rounded-lg'
                 />
                 <Link href='#' className='flex flex-col gap-0'>
                   <span className='text-[22px] font-semibold text-primary'>Workinley</span>

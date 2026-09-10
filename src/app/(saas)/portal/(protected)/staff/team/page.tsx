@@ -5,6 +5,7 @@ import TeamMemberCard from '@/components/saas/team/team-member-card';
 import { PaginationWithLinks } from '@/components/ui/data-table/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import { API_QUERY_PARAMS } from '@/constants/common.constants';
+import { ROUTES } from '@/constants/routes.constants';
 import { IComplianceQuery } from '@/dto/dashboard.dto';
 import { useGetComplianceMatrix } from '@/hooks/use-dashboard';
 import { useTableUrlSync } from '@/hooks/use-table-url-sync';
@@ -12,7 +13,7 @@ import { getCurrentWeekYear } from '@/utils/common-utils';
 import { Inbox } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
-const TeamPage = () => {
+const StaffTeamPage = () => {
   const searchParams = useSearchParams();
 
   // Initialize URL sync for cards mode
@@ -64,9 +65,9 @@ const TeamPage = () => {
       {/* Header */}
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
         <div>
-          <h1 className='text-2xl font-bold text-foreground'>Team Members</h1>
+          <h1 className='text-2xl font-bold text-foreground'>Team Compliance</h1>
           <p className='text-muted-foreground text-sm mt-1'>
-            Week {weekNumber}, {year} compliance overview
+            Week {weekNumber}, {year} compliance overview & performance tracking
           </p>
         </div>
       </div>
@@ -90,7 +91,12 @@ const TeamPage = () => {
       ) : (
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr'>
           {members.map((member) => (
-            <TeamMemberCard key={member.user.id} member={member} weekNumber={weekNumber} />
+            <TeamMemberCard
+              key={member.user.id}
+              member={member}
+              weekNumber={weekNumber}
+              href={ROUTES.STAFF_TEAM_MEMBER(member.user.id)}
+            />
           ))}
         </div>
       )}
@@ -101,4 +107,4 @@ const TeamPage = () => {
   );
 };
 
-export default TeamPage;
+export default StaffTeamPage;

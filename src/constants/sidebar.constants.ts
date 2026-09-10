@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   ClipboardCheck,
   FolderKanban,
   LayoutDashboard,
@@ -16,6 +15,7 @@ export const SIDEBAR_MENU_CATEGORIES = {
   USERS_MANAGEMENT: 'Users Management',
   TEAM: 'Team',
   MANAGEMENT: 'Management',
+  WORKSPACE: 'Workspace',
 };
 
 export const COMMON_SIDEBAR_MENU_ITEMS = {
@@ -30,35 +30,33 @@ export const COMMON_SIDEBAR_MENU_ITEMS = {
 
 // Items for Admin sidebar
 export const ADMIN_SIDEBAR_MENU_ITEMS = {
-  HOME: [{ name: 'Dashboard', url: ROUTES.DASHBOARD_ROOT, icon: LayoutDashboard }],
+  HOME: [{ name: 'Dashboard', url: ROUTES.STAFF_DASHBOARD, icon: LayoutDashboard }],
   REPORTS: [
-    { name: 'All Reports', url: ROUTES.REVIEWS_ROOT, icon: ClipboardCheck },
-    { name: 'Projects', url: ROUTES.PROJECTS_ROOT, icon: FolderKanban },
+    { name: 'All Reports', url: ROUTES.STAFF_REVIEWS, icon: ClipboardCheck },
+    { name: 'Projects', url: ROUTES.STAFF_PROJECTS, icon: FolderKanban },
   ],
-  TEAM: [
-    { name: 'Analytics', url: ROUTES.DASHBOARD_ROOT, icon: BarChart3 },
-    { name: 'Team Members', url: ROUTES.TEAM_ROOT, icon: UserCheck },
-  ],
+  TEAM: [{ name: 'Team Members', url: ROUTES.STAFF_TEAM, icon: UserCheck }],
   MANAGEMENT: [
-    { name: 'Users', url: ROUTES.USERS_ROOT, icon: Users },
-    { name: 'Invitations', url: ROUTES.INVITATIONS_ROOT, icon: Mail },
+    { name: 'Users', url: ROUTES.STAFF_USERS, icon: Users },
+    { name: 'Invitations', url: ROUTES.STAFF_INVITATIONS, icon: Mail },
   ],
 };
 
 // Items for Manager sidebar (no User Management)
 export const MANAGER_SIDEBAR_MENU_ITEMS = {
-  HOME: [{ name: 'Dashboard', url: ROUTES.DASHBOARD_ROOT, icon: LayoutDashboard }],
+  HOME: [{ name: 'Dashboard', url: ROUTES.STAFF_DASHBOARD, icon: LayoutDashboard }],
   REPORTS: [
-    { name: 'All Reports', url: ROUTES.REVIEWS_ROOT, icon: ClipboardCheck },
-    { name: 'Projects', url: ROUTES.PROJECTS_ROOT, icon: FolderKanban },
+    { name: 'All Reports', url: ROUTES.STAFF_REVIEWS, icon: ClipboardCheck },
+    { name: 'Projects', url: ROUTES.STAFF_PROJECTS, icon: FolderKanban },
   ],
-  TEAM: [
-    { name: 'Analytics', url: ROUTES.DASHBOARD_ROOT, icon: BarChart3 },
-    { name: 'Team Members', url: ROUTES.TEAM_ROOT, icon: UserCheck },
-  ],
+  TEAM: [{ name: 'Team Members', url: ROUTES.STAFF_TEAM, icon: UserCheck }],
 };
 
 // Items for Team Member sidebar
 export const MEMBER_SIDEBAR_MENU_ITEMS = {
-  HOME: [{ name: 'My Reports', url: ROUTES.REPORTS_ROOT, icon: FileText }],
+  HOME: [
+    { name: 'Dashboard', url: ROUTES.USER_DASHBOARD, icon: LayoutDashboard },
+    { name: 'My Reports', url: ROUTES.REPORTS_ROOT, icon: FileText },
+    { name: 'Projects', url: ROUTES.PROJECTS_ROOT, icon: FolderKanban },
+  ],
 };

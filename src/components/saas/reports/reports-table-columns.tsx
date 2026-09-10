@@ -96,7 +96,10 @@ export const reportsTableColumns: ColumnDef<IWeeklyReport>[] = [
     cell: ({ row }) => {
       const status = row.original.status as REPORT_STATUS;
       return (
-        <Badge variant={REPORT_STATUS_VARIANTS[status]} className='text-xs'>
+        <Badge
+          variant={REPORT_STATUS_VARIANTS[status]}
+          className='w-32 justify-center text-center text-xs font-medium'
+        >
           {REPORT_STATUS_LABELS[status]}
         </Badge>
       );

@@ -1,7 +1,7 @@
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/providers/auth.provider';
 import ReactQueryProvider from '@/providers/react-query.provider';
-import { poppins } from '@/utils/font-utils';
+import { fontSans } from '@/utils/font-utils';
 import '@/utils/yup-extension-utils'; // Register custom yup methods globally
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
@@ -14,14 +14,14 @@ interface RootLayoutProps {
 }
 
 export const metadata: Metadata = {
-  title: { default: 'Biztock', template: '%s | Biztock Template' },
-  description: "Let's Turn the Ideas into Reality with Technology",
+  title: { default: 'Workinley', template: '%s | Internal Tool' },
+  description: 'Manage your projects at ease',
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang='en'>
-      <body className={poppins.variable} suppressHydrationWarning={true}>
+      <body className={`${fontSans.variable} font-sans`} suppressHydrationWarning={true}>
         <ReactQueryProvider>
           <AuthProvider>
             <NextTopLoader />

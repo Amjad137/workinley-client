@@ -5,7 +5,7 @@ import { environment } from '@/config/env.config';
 
 export const authClient = createAuthClient({
   baseURL: environment.apiURL,
-  basePath: '/v1/auth',
+  basePath: '/api/auth',
   plugins: [
     inferAdditionalFields({
       user: {

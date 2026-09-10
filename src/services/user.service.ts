@@ -3,15 +3,15 @@ import Axios from '@/config/api.config';
 import { ENTITY_SORT, SORT_BY } from '@/constants/common.constants';
 import { ICommonResponseDTO, IPaginatedResponseDTO } from '@/dto/common.dto';
 import { IUserQuery } from '@/dto/user.dto';
-import { toast } from '@/hooks/use-toast';
 import { DeepPartial } from '@/types/common.type';
 import { IUser } from '@/types/user.type';
-import ErrorHandler from '@/utils/error-handler';
-import { AxiosError } from 'axios';
+import { handleError } from '@/utils/error-handler';
+
+const BASE = '/v1/users';
 
 export const fetchAllUsers = async (params?: IUserQuery): Promise<IPaginatedResponseDTO<IUser>> => {
   try {
-    const response = await Axios.get<ICommonResponseDTO<IPaginatedResponseDTO<IUser>>>('/v1/user', {
+    const response = await Axios.get<ICommonResponseDTO<IPaginatedResponseDTO<IUser>>>(BASE, {
       params: {
         ...params,
         sortBy: params?.sortBy ?? SORT_BY.DATE,
@@ -23,159 +23,66 @@ export const fetchAllUsers = async (params?: IUserQuery): Promise<IPaginatedResp
 
     return response.data.data;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
+    return handleError(err);
   }
 };
 
-export const fetchAllUsersCount = async () => {
+export const fetchAllUsersCount = async (): Promise<number> => {
   try {
-    const response = await Axios.get<ICommonResponseDTO<number>>('/v1/user/count');
-
+    const response = await Axios.get<ICommonResponseDTO<number>>(`${BASE}/count`);
     return response.data.data ?? 0;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
+    return handleError(err);
   }
 };
 
-export const fetchUserById = async (userId: string) => {
+export const updateUser = async (
+  userId: string,
+  data: DeepPartial<ISignupFormValues>,
+): Promise<IUser | null> => {
   try {
-    const response = await Axios.get<ICommonResponseDTO<IUser>>(`/v1/user/${userId}`);
-
+    const response = await Axios.patch<ICommonResponseDTO<IUser>>(`${BASE}/${userId}`, data);
     return response.data.data || null;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
-  }
-};
-
-export const updateUser = async (userId: string, data: DeepPartial<ISignupFormValues>) => {
-  try {
-    const response = await Axios.patch<ICommonResponseDTO<IUser>>(`/v1/user/${userId}`, {
-      ...data,
-    });
-
-    return response.data.data || null;
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
+    return handleError(err);
   }
 };
 
 export const updateUserByAdmin = async (
   userId: string,
   userData: Omit<ISignupFormValues, 'password' | 'confirmPassword' | 'entryCode'>,
-) => {
+): Promise<IUser | null> => {
   try {
-    const response = await Axios.patch<ICommonResponseDTO<IUser>>(`/v1/user/${userId}/protected`, {
-      updatedFields: {
-        ...userData,
-      },
-    });
-
+    const response = await Axios.patch<ICommonResponseDTO<IUser>>(`${BASE}/${userId}`, userData);
     return response.data.data || null;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
+    return handleError(err);
   }
 };
 
-export const updateMultipleUserStatus = async (userIDs: string[], status: boolean) => {
-  try {
-    const response = await Axios.patch<
-      ICommonResponseDTO<{ message: string; updatedProfileIDs: string[] }>
-    >('/v1/user/status', {
-      userIDs,
-      status,
-    });
-
-    return response.data.data ?? null;
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
-  }
-};
-
-export const verifyMultipleUsers = async (userIDs: string[], verification: string) => {
+export const verifyMultipleUsers = async (
+  userIDs: string[],
+  verification: string,
+): Promise<{ message: string; verifiedProfileIDs: string[] } | null> => {
   try {
     const response = await Axios.patch<
       ICommonResponseDTO<{ message: string; verifiedProfileIDs: string[] }>
-    >('/v1/user/verify', {
+    >(`${BASE}/verify`, {
       userIDs,
       verification: verification === 'true',
     });
 
     return response.data.data ?? null;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
+    return handleError(err);
   }
 };
 
-export const deleteUserById = async (userId: string) => {
+export const deleteUserById = async (userId: string): Promise<null> => {
   try {
-    const response = await Axios.delete<ICommonResponseDTO<null>>(`/v1/user/${userId}`);
-
+    const response = await Axios.delete<ICommonResponseDTO<null>>(`${BASE}/${userId}`);
     return response.data.data;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      const { errorMessage } = ErrorHandler(err);
-      toast({
-        title: 'Error!',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-    throw err;
+    return handleError(err);
   }
 };

@@ -42,22 +42,27 @@ export const reviewsTableColumns: ColumnDef<IWeeklyReport>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title='Team Member' />,
     cell: ({ row }) => {
       const user = row.original.user;
-      if (!user) return null;
-      const initials = user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
+      if (!user) return <span className='text-xs text-muted-foreground'>-</span>;
+      const displayName = user.name || user.email || 'Member';
+      const initials =
+        displayName
+          .split(' ')
+          .filter(Boolean)
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2) || 'U';
       return (
         <div className='flex items-center gap-2'>
           <Avatar className='h-7 w-7'>
             <AvatarImage src={user.image} />
             <AvatarFallback className='text-xs'>{initials}</AvatarFallback>
           </Avatar>
-          <div>
-            <p className='text-xs font-medium'>{user.name}</p>
-            <p className='text-xs text-muted-foreground'>{user.email}</p>
+          <div className='min-w-0'>
+            <p className='text-xs font-medium truncate'>{user.name || user.email}</p>
+            {user.name && user.email && (
+              <p className='text-xs text-muted-foreground truncate'>{user.email}</p>
+            )}
           </div>
         </div>
       );
@@ -117,7 +122,10 @@ export const reviewsTableColumns: ColumnDef<IWeeklyReport>[] = [
     cell: ({ row }) => {
       const status = row.original.status as REPORT_STATUS;
       return (
-        <Badge variant={REPORT_STATUS_VARIANTS[status]} className='text-xs'>
+        <Badge
+          variant={REPORT_STATUS_VARIANTS[status]}
+          className='w-32 justify-center text-center text-xs font-medium'
+        >
           {REPORT_STATUS_LABELS[status]}
         </Badge>
       );

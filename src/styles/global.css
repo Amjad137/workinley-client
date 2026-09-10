@@ -3,75 +3,125 @@
 @tailwind utilities;
 
 body {
-  font-family: var(--font-poppins), sans-serif, Helvetica;
+  font-family:
+    var(--font-sans),
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
 }
 
 @layer base {
   :root {
+    /* Base surfaces & text */
     --background: 0 0% 100%;
-    --foreground: 244 47% 10%;
+    --foreground: 200 45% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 244 47% 10%;
+    --card-foreground: 200 45% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 244 47% 10%;
+    --popover-foreground: 200 45% 11%;
 
-    --primary: 243 75% 59%;
+    /* Brand Primary: #1E6B8A (Deep Ocean Teal) */
+    --primary: 197 64% 33%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 226 100% 97%;
-    --secondary-foreground: 244 47% 20%;
+    /* Brand Secondary: #3DBE8B (Emerald Mint) */
+    --secondary: 156 45% 92%;
+    --secondary-foreground: 158 65% 17%;
 
-    --muted: 226 60% 96%;
-    --muted-foreground: 240 8% 46%;
+    /* Neutrals & utilities */
+    --muted: 195 25% 95%;
+    --muted-foreground: 198 16% 40%;
 
-    --accent: 225 100% 94%;
-    --accent-foreground: 244 47% 20%;
+    --accent: 197 45% 92%;
+    --accent-foreground: 197 64% 23%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 226 40% 90%;
-    --input: 226 40% 90%;
-    --ring: 243 75% 59%;
+    --border: 197 20% 88%;
+    --input: 197 20% 88%;
+    --ring: 197 64% 33%;
     --radius: 0.5rem;
 
-    --scrollbar-thumb: hsl(243 75% 59% / 0.25);
-    --scrollbar-track: hsl(226 60% 96%);
+    /* Charts (harmonized with primary & secondary) */
+    --chart-1: 197 64% 33%;
+    --chart-2: 156 52% 49%;
+    --chart-3: 185 65% 40%;
+    --chart-4: 140 45% 38%;
+    --chart-5: 210 50% 50%;
+
+    /* Sidebar */
+    --sidebar-background: 200 25% 98%;
+    --sidebar-foreground: 200 45% 14%;
+    --sidebar-primary: 197 64% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 197 40% 92%;
+    --sidebar-accent-foreground: 197 64% 23%;
+    --sidebar-border: 197 20% 90%;
+    --sidebar-ring: 197 64% 33%;
+
+    /* Custom scrollbar */
+    --scrollbar-thumb: hsl(197 64% 33% / 0.28);
+    --scrollbar-track: hsl(195 25% 95%);
   }
 
   .dark {
-    --background: 244 40% 8%;
-    --foreground: 0 0% 98%;
+    /* Base surfaces & text */
+    --background: 202 45% 7%;
+    --foreground: 195 20% 96%;
 
-    --card: 244 35% 11%;
-    --card-foreground: 0 0% 98%;
+    --card: 202 40% 10%;
+    --card-foreground: 195 20% 96%;
 
-    --popover: 244 35% 11%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 202 40% 10%;
+    --popover-foreground: 195 20% 96%;
 
-    --primary: 243 80% 68%;
+    /* Brand Primary (Luminous Ocean Cyan for dark surfaces) */
+    --primary: 197 75% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 244 30% 18%;
-    --secondary-foreground: 0 0% 98%;
+    /* Brand Secondary (Deep Emerald surface with bright mint text) */
+    --secondary: 156 45% 18%;
+    --secondary-foreground: 156 65% 85%;
 
-    --muted: 244 30% 18%;
-    --muted-foreground: 240 8% 65%;
+    /* Neutrals & utilities */
+    --muted: 202 30% 15%;
+    --muted-foreground: 198 16% 65%;
 
-    --accent: 244 30% 22%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 202 35% 18%;
+    --accent-foreground: 195 25% 96%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 244 30% 20%;
-    --input: 244 30% 20%;
-    --ring: 243 80% 68%;
+    --border: 202 30% 18%;
+    --input: 202 30% 18%;
+    --ring: 197 75% 48%;
 
-    --scrollbar-thumb: hsl(243 80% 68% / 0.3);
-    --scrollbar-track: hsl(244 30% 14%);
+    /* Charts (Dark mode vibrancy) */
+    --chart-1: 197 75% 52%;
+    --chart-2: 156 55% 52%;
+    --chart-3: 185 75% 55%;
+    --chart-4: 140 50% 55%;
+    --chart-5: 210 65% 65%;
+
+    /* Sidebar */
+    --sidebar-background: 202 45% 8%;
+    --sidebar-foreground: 195 20% 94%;
+    --sidebar-primary: 197 75% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 202 35% 15%;
+    --sidebar-accent-foreground: 195 25% 95%;
+    --sidebar-border: 202 30% 16%;
+    --sidebar-ring: 197 75% 48%;
+
+    /* Custom scrollbar */
+    --scrollbar-thumb: hsl(197 75% 48% / 0.32);
+    --scrollbar-track: hsl(202 35% 12%);
   }
 }
 
@@ -107,6 +157,6 @@ body {
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(243 75% 59% / 0.45);
+    background: hsl(197 64% 33% / 0.5);
   }
 }

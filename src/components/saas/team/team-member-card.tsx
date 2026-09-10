@@ -24,6 +24,7 @@ import Link from 'next/link';
 interface TeamMemberCardProps {
   member: IComplianceMember;
   weekNumber: number;
+  href?: string;
 }
 
 const STATUS_CONFIG: Record<
@@ -70,7 +71,7 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const TeamMemberCard = ({ member, weekNumber }: TeamMemberCardProps) => {
+const TeamMemberCard = ({ member, weekNumber, href }: TeamMemberCardProps) => {
   const { user, status, currentVersion, submittedAt } = member;
   const initials = getUserInitials(user);
   const statusCfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.NOT_STARTED;
@@ -153,7 +154,7 @@ const TeamMemberCard = ({ member, weekNumber }: TeamMemberCardProps) => {
           className='w-full justify-between text-xs font-medium hover:text-primary'
           asChild
         >
-          <Link href={ROUTES.TEAM_MEMBER(user.id)}>
+          <Link href={href || ROUTES.TEAM_MEMBER(user.id)}>
             <span className='inline-flex items-center gap-1.5'>
               <User className='h-3.5 w-3.5' /> View Profile
             </span>

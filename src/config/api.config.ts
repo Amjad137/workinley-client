@@ -3,9 +3,10 @@ import { authClient } from '@/config/better-auth/auth.client';
 import { useAuthStore } from '@/stores/auth.store';
 import axios from 'axios';
 import { environment } from './env.config';
+import { getRestApiBaseUrl } from '@/utils/common-utils';
 
 const Axios = axios.create({
-  baseURL: environment.apiURL,
+  baseURL: getRestApiBaseUrl(environment.apiURL),
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });

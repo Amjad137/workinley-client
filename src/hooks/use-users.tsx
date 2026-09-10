@@ -4,8 +4,6 @@ import {
   deleteUserById,
   fetchAllUsers,
   fetchAllUsersCount,
-  fetchUserById,
-  updateMultipleUserStatus,
   updateUser,
   updateUserByAdmin,
   verifyMultipleUsers,
@@ -41,20 +39,6 @@ export const useGetAllUsersCount = (options?: { enabled?: boolean }) => {
   return {
     isLoading,
     data: data ?? 0,
-    error,
-  };
-};
-
-export const useGetUserById = (userId: string, options?: { enabled?: boolean }) => {
-  const { isLoading, data, error } = useQuery({
-    queryKey: ['userWithId', userId],
-    queryFn: () => fetchUserById(userId),
-    enabled: options?.enabled ?? true,
-  });
-
-  return {
-    isLoading,
-    data: data ?? null,
     error,
   };
 };
@@ -130,33 +114,6 @@ export const useUpdateUserByAdmin = () => {
         description: 'Failed to update user',
         variant: 'destructive',
       });
-    },
-  });
-};
-
-export const useUpdateUserStatus = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ userIDs, status }: { userIDs: string[]; status: boolean }) =>
-      updateMultipleUserStatus(userIDs, status),
-    onMutate: () => {
-      toast({
-        title: 'Updating',
-        description: 'Updating user status...',
-      });
-    },
-    onSuccess: (data, variables) => {
-      toast({
-        title: 'Success',
-        description: 'Status updated successfully',
-      });
-      variables.userIDs.forEach((userId) => {
-        queryClient.invalidateQueries({
-          queryKey: ['userWithId', userId],
-        });
-      });
-      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 };
